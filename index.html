@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Will Francis | Baseball Analytics</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=IBM+Plex+Mono:wght@300;400;500&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #080d1a;
+    --navy-mid: #0e1628;
+    --navy-light: #162035;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --white: #f0ece3;
+    --gray: #8a8f9e;
+    --gray-light: #c5c8d1;
+    --border: rgba(201,168,76,0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 60px;
+    background: rgba(8,13,26,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-name {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--white);
+    letter-spacing: 0.02em;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 36px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--gray);
+    text-decoration: none;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--gold); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 120px 60px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -200px; right: -200px;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.1s;
+  }
+
+  .hero-name {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(52px, 8vw, 100px);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: var(--white);
+    margin-bottom: 36px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.2s;
+  }
+
+  .hero-name span {
+    color: var(--gold);
+    display: block;
+  }
+
+  .hero-desc {
+    font-size: 19px;
+    font-weight: 300;
+    color: var(--gray-light);
+    max-width: 560px;
+    line-height: 1.6;
+    margin-bottom: 52px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.35s;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 48px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.5s;
+  }
+
+  .stat {
+    border-left: 2px solid var(--gold);
+    padding-left: 16px;
+  }
+
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--gray);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .hero-scroll {
+    position: absolute;
+    bottom: 40px;
+    left: 60px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--gray);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.7s;
+  }
+
+  .hero-scroll::before {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 1px;
+    background: var(--gold);
+  }
+
+  /* SECTIONS */
+  section {
+    padding: 100px 60px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 4vw, 48px);
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.1;
+    margin-bottom: 48px;
+  }
+
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: var(--border);
+    margin: 0;
+  }
+
+  /* ABOUT */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+
+  .about-text p {
+    color: var(--gray-light);
+    margin-bottom: 20px;
+    font-size: 17px;
+    font-weight: 300;
+  }
+
+  .about-text p strong {
+    color: var(--white);
+    font-weight: 600;
+  }
+
+  .about-sidebar {}
+
+  .sidebar-block {
+    margin-bottom: 36px;
+    padding-bottom: 36px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-block:last-child {
+    border-bottom: none;
+  }
+
+  .sidebar-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .sidebar-val {
+    color: var(--gray-light);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 2px;
+    letter-spacing: 0.05em;
+  }
+
+  /* PROJECTS */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .project-card {
+    background: var(--navy-mid);
+    border: 1px solid var(--border);
+    padding: 40px;
+    position: relative;
+    transition: border-color 0.3s, transform 0.3s;
+    cursor: default;
+  }
+
+  .project-card:hover {
+    border-color: var(--gold);
+    transform: translateY(-4px);
+  }
+
+  .project-card.wide {
+    grid-column: span 2;
+  }
+
+  .project-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    margin-bottom: 20px;
+  }
+
+  .project-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+
+  .project-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--gray);
+    letter-spacing: 0.1em;
+    margin-bottom: 20px;
+  }
+
+  .project-desc {
+    color: var(--gray-light);
+    font-size: 15px;
+    font-weight: 300;
+    line-height: 1.7;
+    margin-bottom: 24px;
+  }
+
+  .project-findings {
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+    margin-top: 4px;
+  }
+
+  .finding {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: var(--gray-light);
+    font-weight: 300;
+  }
+
+  .finding::before {
+    content: '//';
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--gold);
+    flex-shrink: 0;
+    font-size: 12px;
+    margin-top: 2px;
+  }
+
+  .project-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 20px;
+    transition: gap 0.2s;
+  }
+
+  .project-link:hover { gap: 14px; }
+
+  /* RESUME */
+  .resume-section {
+    background: var(--navy-mid);
+    border: 1px solid var(--border);
+    padding: 60px;
+  }
+
+  .resume-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .resume-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+
+  .resume-contact {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--gray);
+    letter-spacing: 0.08em;
+  }
+
+  .resume-contact a {
+    color: var(--gold);
+    text-decoration: none;
+  }
+
+  .resume-block {
+    margin-bottom: 36px;
+  }
+
+  .resume-section-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+
+  .resume-job {
+    margin-bottom: 24px;
+  }
+
+  .resume-job-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .resume-job-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--white);
+  }
+
+  .resume-job-org {
+    font-style: italic;
+    color: var(--gold-light);
+  }
+
+  .resume-job-date {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--gray);
+    letter-spacing: 0.05em;
+  }
+
+  .resume-job-location {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--gray);
+    margin-bottom: 10px;
+  }
+
+  .resume-bullets {
+    list-style: none;
+    padding: 0;
+  }
+
+  .resume-bullets li {
+    font-size: 14px;
+    color: var(--gray-light);
+    font-weight: 300;
+    padding-left: 16px;
+    position: relative;
+    margin-bottom: 6px;
+    line-height: 1.6;
+  }
+
+  .resume-bullets li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--gold);
+  }
+
+  .resume-info-line {
+    font-size: 14px;
+    color: var(--gray-light);
+    font-weight: 300;
+    margin-bottom: 6px;
+    line-height: 1.6;
+  }
+
+  .resume-info-line strong {
+    color: var(--white);
+    font-weight: 600;
+  }
+
+  .resume-edu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+  }
+
+  .resume-edu-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--white);
+  }
+
+  .resume-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--navy);
+    background: var(--gold);
+    padding: 14px 28px;
+    text-decoration: none;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 40px;
+    transition: background 0.2s;
+  }
+
+  .resume-download:hover { background: var(--gold-light); }
+
+  /* CONTACT */
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+
+  .contact-text {
+    font-size: 19px;
+    font-weight: 300;
+    color: var(--gray-light);
+    line-height: 1.6;
+    margin-bottom: 36px;
+  }
+
+  .contact-links {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .contact-link {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    text-decoration: none;
+    padding: 20px 24px;
+    border: 1px solid var(--border);
+    background: var(--navy-mid);
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .contact-link:hover {
+    border-color: var(--gold);
+    transform: translateX(4px);
+  }
+
+  .contact-link-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .contact-link-val {
+    font-size: 15px;
+    color: var(--white);
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    color: var(--gray);
+  }
+
+  .footer-quote {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--gray);
+    letter-spacing: 0.05em;
+    font-style: italic;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* SCROLL REVEAL */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (max-width: 768px) {
+    nav { padding: 16px 24px; }
+    .nav-links { gap: 20px; }
+    .hero { padding: 100px 24px 60px; }
+    .hero-stats { flex-wrap: wrap; gap: 24px; }
+    section { padding: 60px 24px; }
+    .about-grid, .projects-grid, .contact-grid { grid-template-columns: 1fr; }
+    .projects-grid .project-card.wide { grid-column: span 1; }
+    .resume-section { padding: 32px 24px; }
+    footer { padding: 24px; flex-direction: column; gap: 12px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-name">Will Francis</div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#projects">Research</a></li>
+    <li><a href="#resume">Resume</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">Baseball Analytics / R&D</div>
+  <h1 class="hero-name">Will<span>Francis.</span></h1>
+  <p class="hero-desc">Princeton ORFE graduate. I build quantitative tools for baseball, from swing mechanics to cognitive decision modeling, because the game deserves better answers than intuition alone.</p>
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-num">50K+</div>
+      <div class="stat-label">Pitches Analyzed</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">28</div>
+      <div class="stat-label">D1 Hitters Studied</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">2</div>
+      <div class="stat-label">Original Metrics</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">3</div>
+      <div class="stat-label">Seasons in the Dugout</div>
+    </div>
+  </div>
+  <div class="hero-scroll">Scroll to explore</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-tag">Background</div>
+  <h2 class="section-title">Two obsessions.<br>One career.</h2>
+  <div class="about-grid reveal">
+    <div class="about-text">
+      <p>I have been obsessed with two things my entire life: <strong>baseball and applied mathematics</strong>. Most people pick one. At Princeton I found a way to make them inseparable, and every research project and internship since has been a step toward doing this work at the highest level.</p>
+      <p>My work spans pitching and hitting, mechanics and cognition, scouting and modeling, but it all comes from the same place: a genuine belief that the right question, asked carefully with the right data, can change how a team wins.</p>
+      <p>I graduated from Princeton's Department of Operations Research and Financial Engineering in May 2026. Alongside my analytical work, I was a <strong>four-year member of the Princeton Varsity Men's Soccer team</strong>, a two-time Ivy League Tournament Champion with two NCAA appearances. Being a high-level athlete gave me a perspective on performance, pressure, and decision-making that no classroom could.</p>
+      <p>I am currently working as an <strong>R&D Analyst with the San Diego Waves</strong>, building a lineup optimization model from scratch and scouting opposing and in-house players using TrackMan and proprietary data.</p>
+    </div>
+    <div class="about-sidebar">
+      <div class="sidebar-block">
+        <div class="sidebar-label">Education</div>
+        <div class="sidebar-val">Princeton University<br>B.S.E. in Operations Research &amp; Financial Engineering<br>Minor in Classics, May 2026</div>
+      </div>
+      <div class="sidebar-block">
+        <div class="sidebar-label">Technical Skills</div>
+        <div class="tag-list">
+          <span class="tag">Python</span>
+          <span class="tag">Java</span>
+          <span class="tag">Stata</span>
+          <span class="tag">Excel</span>
+          <span class="tag">SAP</span>
+          <span class="tag">TrackMan</span>
+          <span class="tag">Synergy</span>
+          <span class="tag">Statcast</span>
+          <span class="tag">Baseball Savant</span>
+        </div>
+      </div>
+      <div class="sidebar-block">
+        <div class="sidebar-label">Methods</div>
+        <div class="tag-list">
+          <span class="tag">Ridge Regression</span>
+          <span class="tag">Neural Networks</span>
+          <span class="tag">PCA</span>
+          <span class="tag">MLE</span>
+          <span class="tag">Drift Diffusion</span>
+          <span class="tag">KS Testing</span>
+          <span class="tag">LOOCV</span>
+        </div>
+      </div>
+      <div class="sidebar-block">
+        <div class="sidebar-label">Contact</div>
+        <div class="sidebar-val">
+          <a href="mailto:jwillfrancis107@gmail.com" style="color:var(--gold);text-decoration:none;">jwillfrancis107@gmail.com</a><br>
+          858-731-7951
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="section-tag">Research</div>
+  <h2 class="section-title">Original work.</h2>
+  <div class="projects-grid">
+
+    <div class="project-card wide reveal">
+      <div class="project-num">01 / Senior Thesis / Princeton ORFE / April 2026</div>
+      <div class="project-title">Swing Time in Division I Baseball</div>
+      <div class="project-sub">Bridging Bat Speed and Swing Length to Predict Hitter Success</div>
+      <div class="project-desc">
+        At the collegiate level, bat speed and swing length are not tracked. This thesis introduced "Swing Time," defined as the duration from swing initiation to contact, as a proxy metric measurable through frame-by-frame Synergy video analysis synchronized with TrackMan pitch data. The core insight: a hitter who takes less time to swing has more time to read the pitch. Using a dataset of 28 Division I hitters across multiple conferences, the thesis validated Swing Time as a statistically independent, player-specific mechanical signature and demonstrated its predictive power for season-level hitting statistics.
+      </div>
+      <div class="project-findings">
+        <div class="finding">Swing Time is statistically independent of game context, pitch type, and hitter archetype (R&sup2; &lt; 0.05 across all tested variables), confirming it as a stable individual characteristic.</div>
+        <div class="finding">PCA of MLB Statcast bat-tracking data discovered a 1:1 standardized ratio of bat speed to swing length, with PC2 (42.7% of variance) identified as the primary Swing Time dimension.</div>
+        <div class="finding">A single-hidden-layer neural network outperformed ridge regression in predicting AVG, OBP, SLG, OPS, and JOPS in 9 of 10 random seeds, suggesting nonlinear relationships between swing timing and outcomes.</div>
+        <div class="finding">Bootstrapped sample size optimization determined that 20 swings per hitter achieves &ge;90% distributional accuracy, making the methodology scalable for player evaluation pipelines.</div>
+      </div>
+      <a class="project-link" href="https://github.com/willfrancis04/Thesis" target="_blank">View Code on GitHub &rarr;</a>
+    </div>
+
+    <div class="project-card reveal">
+      <div class="project-num">02 / Term Paper / Princeton Psychology &amp; CS / 2025</div>
+      <div class="project-title">What Makes a Baseball Player Swing?</div>
+      <div class="project-sub">A Deadline-Constrained Drift Diffusion Model of MLB Hitter Decision-Making</div>
+      <div class="project-desc">
+        Hitters have between 125 and 225 milliseconds to decide whether to swing. This paper modeled that binary decision across nearly 50,000 four-seam fastballs from the 2023 to 2025 MLB seasons using a deadline-constrained Drift Diffusion Model, decomposing the relative influence of visual and contextual inputs on swing probability.
+      </div>
+      <div class="project-findings">
+        <div class="finding">Pitch location outside the strike zone (&#946; = &minus;7.50) is the dominant driver of take decisions, far outweighing all other inputs.</div>
+        <div class="finding">Full count (3&ndash;2) produced the highest swing likelihood across all count states; swing probability increases monotonically with most at-bat progressions.</div>
+        <div class="finding">Bases loaded is the only runner state that suppresses swing probability, suggesting hitters inadequately adjust for walk value, revealing a quantifiable, correctable bias.</div>
+      </div>
+    </div>
+
+    <div class="project-card reveal">
+      <div class="project-num">03 / Ongoing / San Diego Waves / 2026</div>
+      <div class="project-title">Lineup Optimization Model</div>
+      <div class="project-sub">Quantitative Sequencing and Run-Value Maximization</div>
+      <div class="project-desc">
+        Building a lineup optimization model from scratch using TrackMan and proprietary data, applying quantitative methods to player sequencing and run-value maximization. Alongside this, scouting opposing and in-house players for behavioral tendencies and translating findings into actionable insights for coaching staff.
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- RESUME -->
+<section id="resume">
+  <div class="section-tag">Resume</div>
+  <h2 class="section-title">Experience.</h2>
+  <div class="resume-section reveal">
+    <div class="resume-header">
+      <div class="resume-name">Will Francis</div>
+      <div class="resume-contact">
+        858-731-7951 &nbsp;|&nbsp;
+        <a href="mailto:jf3657@princeton.edu">jf3657@princeton.edu</a> &nbsp;|&nbsp;
+        <a href="mailto:jwillfrancis107@gmail.com">jwillfrancis107@gmail.com</a> &nbsp;|&nbsp;
+        San Diego, CA
+      </div>
+    </div>
+
+    <!-- Education -->
+    <div class="resume-block">
+      <div class="resume-section-title">Education</div>
+      <div class="resume-edu-header">
+        <div class="resume-edu-name">Princeton University, NJ</div>
+        <div class="resume-job-date">Graduation: May 2026</div>
+      </div>
+      <div class="resume-info-line" style="font-style:italic;margin-bottom:10px;">Bachelor of Science in Engineering in Operations Research and Financial Engineering (Applied Math) with minor in Classics</div>
+      <div class="resume-info-line"><strong>Princeton Varsity Men's Soccer (NCAA Division I):</strong> 2024, 2025 Ivy League Tournament Champions; 2x NCAA appearances; recruited as 153rd-ranked player nationally; pre-college Albion SC; Olympic Development Program participant</div>
+      <div class="resume-info-line"><strong>Relevant Coursework:</strong> Probability, Stochastic Systems; Optimization; Optimal Learning; Networks; Systems Analysis; Computational Models of Cognition; Sports Economics; Multivariable Calculus; Linear Algebra</div>
+    </div>
+
+    <!-- Technical Skills -->
+    <div class="resume-block">
+      <div class="resume-section-title">Technical Skills</div>
+      <div class="resume-info-line"><strong>Languages &amp; Tools:</strong> Python, Java, Stata, Microsoft Excel, SAP, TrackMan, Synergy</div>
+    </div>
+
+    <!-- Data Analytics Experience -->
+    <div class="resume-block">
+      <div class="resume-section-title">Data Analytics / Sports Finance Experience</div>
+
+      <div class="resume-job">
+        <div class="resume-job-header">
+          <div class="resume-job-title">R&D Analyst, <span class="resume-job-org">San Diego Waves</span></div>
+          <div class="resume-job-date">Incoming</div>
+        </div>
+        <div class="resume-job-location">San Diego, CA</div>
+        <ul class="resume-bullets">
+          <li>Scout opposing and in-house players for behavioral tendencies using TrackMan and proprietary data, translating findings into actionable insights for coaching staff</li>
+          <li>Building lineup optimization model from scratch, applying quantitative methods to player sequencing and run-value maximization</li>
+        </ul>
+      </div>
+
+      <div class="resume-job">
+        <div class="resume-job-header">
+          <div class="resume-job-title">Data Analyst, <span class="resume-job-org">Princeton University Varsity Baseball Team</span></div>
+          <div class="resume-job-date">Jan 2023 – May 2026</div>
+        </div>
+        <div class="resume-job-location">Princeton, NJ</div>
+        <ul class="resume-bullets">
+          <li>Selected through Princeton Baseball Analytics Group to support varsity baseball team with quantitative analysis and scouting</li>
+          <li>Conduct pitcher scouting and opponent analysis using high-dimensional pitch-tracking data including velocity, spin, RPM, and release</li>
+          <li>Process and clean pitch-level datasets, imputation of missing values and aggregation of metrics to generate reliable player profiles</li>
+          <li>Build statistical summaries translating pitch metrics into digestible scouting insights for pre-game preparation</li>
+          <li>Convert pitch characteristics into TrackMan simulation parameters, supporting hitter training against recreated opposing pitcher profiles</li>
+          <li>Communicate analytical findings to coaching staff, contributing to scouting and preparation decisions throughout the season</li>
+        </ul>
+      </div>
+
+      <div class="resume-job">
+        <div class="resume-job-header">
+          <div class="resume-job-title">Data Analytics &amp; Finance Intern, <span class="resume-job-org">L'Or&eacute;al Global CPG</span></div>
+          <div class="resume-job-date">Jun 2025 – Aug 2025</div>
+        </div>
+        <div class="resume-job-location">Tampa, FL</div>
+        <ul class="resume-bullets">
+          <li>Identified anomalous spend patterns and trend deviations across multi-million-dollar SG&amp;A budgets using statistical analysis of large, multi-dimensional financial datasets</li>
+          <li>Engineered dashboards and data visualizations that translated complex cost-center data into clear, decision-ready insights for senior leadership</li>
+          <li>Built forecasting models to project budget trajectories and surface optimization opportunities, with recommendations adopted into strategic planning process</li>
+        </ul>
+      </div>
+
+      <div class="resume-job">
+        <div class="resume-job-header">
+          <div class="resume-job-title">Sports Investment &amp; Wealth Management Intern, <span class="resume-job-org">AWM Capital</span></div>
+          <div class="resume-job-date">Jun 2024 – Aug 2024</div>
+        </div>
+        <div class="resume-job-location">Pasadena, CA</div>
+        <ul class="resume-bullets">
+          <li>Analyzed 100+ potential private equity, venture capital, and real estate investments to support portfolio construction for high-profile professional athletes</li>
+          <li>Built and evaluated cash-flow/risk models reflecting income variability, career length uncertainty, and liquidity needs across portfolios</li>
+          <li>Supported tax planning and portfolio rebalancing across asset classes to improve long-term capital efficiency during and after playing careers</li>
+          <li>Translated quantitative analysis into practical recommendations used by advisors to manage athlete portfolios under variable performance and income outcomes</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Research -->
+    <div class="resume-block">
+      <div class="resume-section-title">Quantitative Research</div>
+
+      <div class="resume-job">
+        <div class="resume-job-header">
+          <div class="resume-job-title">Swing Time in Division I Baseball: Bridging Bat Speed and Swing Length to Predict Hitter Success</div>
+        </div>
+        <div class="resume-job-location" style="font-style:italic;">Princeton University Senior Thesis, Dept. of Operations Research &amp; Financial Engineering, April 2026</div>
+        <div class="resume-job-location">Advisor: Professor Alain Kornhauser</div>
+        <ul class="resume-bullets" style="margin-top:8px;">
+          <li>Developed "Swing Time" metric via frame-by-frame Synergy video analysis synchronized with TrackMan pitch data, manually collecting 560+ swing observations across 28 Division I hitters</li>
+          <li>Demonstrated Swing Time is statistically independent of game context, pitch type, and hitter archetype (R&sup2; &lt; 0.05), validating it as a stable, player-specific mechanical signature</li>
+          <li>Applied PCA to MLB Statcast bat-tracking data discovering a 1:1 standardized ratio of bat speed to swing length, with PC2 (42.7% variance) identified as the primary Swing Time dimension</li>
+          <li>Built ridge regression and single-hidden-layer neural network to predict season-level AVG, OBP, SLG, OPS, and JOPS from Swing Time distribution features</li>
+          <li>Conducted bootstrapped sample size optimization via KS testing, determining 20 swings per hitter achieves &ge;90% distributional accuracy</li>
+        </ul>
+      </div>
+
+      <div class="resume-job">
+        <div class="resume-job-header">
+          <div class="resume-job-title">Computational Cognition Modeling Researcher, <span class="resume-job-org">Princeton University</span></div>
+        </div>
+        <div class="resume-job-location" style="font-style:italic;">Depts. of Psychology, Computer Science, Term Research Project</div>
+        <ul class="resume-bullets" style="margin-top:8px;">
+          <li>Modeled hitter swing/take decisions as binary choice under time pressure using deadline-constrained Drift Diffusion Model (DDM)</li>
+          <li>Built a pitch-level dataset (~50,000 four-seam fastballs) to isolate perceptual and contextual inputs in rapid decision-making</li>
+          <li>Parameterized drift rate as function of pitch characteristics and game context, enabling decomposition of decision drivers</li>
+          <li>Estimated DDM parameters via maximum likelihood, analyzing how different information sources influence evidence accumulation</li>
+          <li>Identified pitch location outside the strike zone (&#946; = &minus;7.50) as the dominant driver of take decisions, with swing likelihood increasing monotonically across most count states</li>
+          <li>Found bases loaded as the only runner state suppressing swing probability, suggesting hitters overweight walk value and revealing a quantifiable, correctable bias in decision-making</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section-tag">Get in Touch</div>
+  <h2 class="section-title">Let's talk.</h2>
+  <div class="contact-grid reveal">
+    <div>
+      <p class="contact-text">I am actively looking for data analyst and R&D roles with MLB organizations. If you are building tools that help teams win, I want to be part of that work.</p>
+    </div>
+    <div class="contact-links">
+      <a class="contact-link" href="mailto:jwillfrancis107@gmail.com">
+        <div>
+          <span class="contact-link-label">Email</span>
+          <span class="contact-link-val">jwillfrancis107@gmail.com</span>
+        </div>
+      </a>
+      <a class="contact-link" href="mailto:jf3657@princeton.edu">
+        <div>
+          <span class="contact-link-label">Princeton Email</span>
+          <span class="contact-link-val">jf3657@princeton.edu</span>
+        </div>
+      </a>
+      <a class="contact-link" href="https://github.com/willfrancis04/Thesis" target="_blank">
+        <div>
+          <span class="contact-link-label">GitHub</span>
+          <span class="contact-link-val">willfrancis04 / Thesis</span>
+        </div>
+      </a>
+      <a class="contact-link" href="tel:8587317951">
+        <div>
+          <span class="contact-link-label">Phone</span>
+          <span class="contact-link-val">858-731-7951</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-name">Will Francis &copy; 2026</div>
+  <div class="footer-quote">Mathematics is the music of reason. James Joseph Sylvester</div>
+</footer>
+
+<script>
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
